@@ -33,3 +33,15 @@ def get_stock_data(ticker: str = Query(..., description="Stock ticker symbol")):
         "sector": info.get("sector"),
         "industry": info.get("industry"),
     }
+
+@app.get("/stocks/history")
+def get_stock_history(ticker: str = Query(..., description="Stock ticker symbol")):
+    stock = yf.Ticker(ticker)
+    hist = stock.history(period="5y")
+    hist = hist.reset_index()
+    hist['Date'] = hist['Date'].astype(str)
+    # Return all columns
+    return {
+        "ticker": ticker,
+        "history": hist.to_dict(orient="records")
+    }
