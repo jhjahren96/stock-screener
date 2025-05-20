@@ -35,9 +35,9 @@ function App() {
     setData(null);
     setHistory([]);
     try {
-      const res = await axios.get(`https://your-backend-url.onrender.com/stocks?ticker=${ticker}`);
+      const res = await axios.get(`https://stock-screener-teh0.onrender.com/stocks?ticker=${ticker}`);
       setData(res.data);
-      const histRes = await axios.get(`https://your-backend-url.onrender.com/stocks/history?ticker=${ticker}`);
+      const histRes = await axios.get(`https://stock-screener-teh0.onrender.com/stocks/history?ticker=${ticker}`);
       setHistory(histRes.data.history);
     } catch (err) {
       setError('Failed to fetch stock data.');
