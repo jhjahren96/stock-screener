@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
+import csv
+import os
 
 app = FastAPI()
 
@@ -62,9 +64,19 @@ def value_screener(
     exchange_tickers = {
         "NASDAQ": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "PEP", "AVGO", "COST"],
         "NYSE": ["JNJ", "V", "PG", "JPM", "MA", "UNH", "HD", "DIS", "BAC", "VZ"],
-        "OSE": ["NHY.OL", "YAR.OL", "TEL.OL", "DNB.OL", "MOWI.OL", "ORK.OL", "TOM.OL", "SALM.OL", "SUBC.OL", "AKSO.OL"]
+        # OSE will be loaded dynamically below
     }
-    tickers = exchange_tickers.get(exchange.upper(), exchange_tickers["NASDAQ"])
+    if exchange.upper() == "OSE":
+        ose_tickers = []
+        csv_path = os.path.join(os.path.dirname(__file__), "euronext_equities.csv")
+        with open(csv_path, newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=';')
+            for row in reader:
+                if row.get('Market') == 'Oslo Børs' and row.get('Symbol'):
+                    ose_tickers.append(f"{row['Symbol']}.OL")
+        tickers = ose_tickers
+    else:
+        tickers = exchange_tickers.get(exchange.upper(), exchange_tickers["NASDAQ"])
 
     results = []
     for ticker in tickers:
