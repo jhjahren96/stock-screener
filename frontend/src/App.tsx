@@ -156,7 +156,7 @@ function App() {
       setScreenerLoading(false);
     }
   };
-
+// Something is wrong with the backend, the fcf_yield is not being returned
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
