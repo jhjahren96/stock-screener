@@ -55,9 +55,10 @@ def value_screener(
     pb_weight: float = Query(1.0),
     projected_growth_weight: float = Query(1.0),
     fcf_yield_weight: float = Query(1.0),
+    dividend_yield_weight: float = Query(1.0),
+    return_on_equity_weight: float = Query(1.0),
     limit: int = Query(20)
 ):
-    # For demo: use a static list of tickers per exchange (replace with dynamic fetch for production)
     exchange_tickers = {
         "NASDAQ": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "PEP", "AVGO", "COST"],
         "NYSE": ["JNJ", "V", "PG", "JPM", "MA", "UNH", "HD", "DIS", "BAC", "VZ"],
@@ -78,6 +79,8 @@ def value_screener(
             free_cash_flow = info.get("freeCashflow")
             market_cap = info.get("marketCap")
             fcf_yield = (free_cash_flow / market_cap) if free_cash_flow and market_cap and market_cap > 0 else None
+            dividend_yield = info.get("dividendYield")
+            return_on_equity = info.get("returnOnEquity")
             score = 0
             count = 0
             if peg and peg > 0:
@@ -101,6 +104,12 @@ def value_screener(
             if fcf_yield and fcf_yield > 0:
                 score += fcf_yield_weight * fcf_yield
                 count += fcf_yield_weight
+            if dividend_yield and dividend_yield > 0:
+                score += dividend_yield_weight * dividend_yield
+                count += dividend_yield_weight
+            if return_on_equity and return_on_equity > 0:
+                score += return_on_equity_weight * return_on_equity
+                count += return_on_equity_weight
             if count > 0:
                 final_score = score / count
             else:
@@ -115,6 +124,8 @@ def value_screener(
                 "pb": pb,
                 "projected_growth": projected_growth,
                 "fcf_yield": fcf_yield,
+                "dividend_yield": dividend_yield,
+                "return_on_equity": return_on_equity,
                 "score": final_score
             })
         except Exception as e:

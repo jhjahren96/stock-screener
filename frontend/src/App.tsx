@@ -33,6 +33,8 @@ interface ValueResult {
   pb?: number;
   projected_growth?: number;
   fcf_yield?: number;
+  dividend_yield?: number;
+  return_on_equity?: number;
   score: number;
 }
 
@@ -105,6 +107,8 @@ function App() {
     pb: 1,
     projected_growth: 1,
     fcf_yield: 1,
+    dividend_yield: 1,
+    return_on_equity: 1,
   });
   const [screenerLoading, setScreenerLoading] = useState(false);
   const [screenerError, setScreenerError] = useState('');
@@ -147,6 +151,8 @@ function App() {
         pb_weight: weights.pb.toString(),
         projected_growth_weight: weights.projected_growth.toString(),
         fcf_yield_weight: weights.fcf_yield.toString(),
+        dividend_yield_weight: weights.dividend_yield.toString(),
+        return_on_equity_weight: weights.return_on_equity.toString(),
         limit: '20',
       });
       const res = await axios.get(`https://stock-screener-teh0.onrender.com/screener/value?${params.toString()}`);
@@ -157,7 +163,7 @@ function App() {
       setScreenerLoading(false);
     }
   };
-// Something is wrong with the backend, the fcf_yield is not being returned
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -268,13 +274,15 @@ function App() {
                   <TableRow>
                     <TableCell>Ticker</TableCell>
                     <TableCell>Name</TableCell>
-                    <TableCell>PEG</TableCell>
+                    <TableCell>PEG Ratio (5 yr expected)</TableCell>
                     <TableCell>Forward P/E</TableCell>
                     <TableCell>P/E (TTM)</TableCell>
                     <TableCell>P/S</TableCell>
                     <TableCell>P/B</TableCell>
                     <TableCell>Proj. Growth</TableCell>
                     <TableCell>FCF Yield</TableCell>
+                    <TableCell>Dividend Yield</TableCell>
+                    <TableCell>Return on Equity</TableCell>
                     <TableCell>Score</TableCell>
                   </TableRow>
                 </TableHead>
@@ -290,6 +298,8 @@ function App() {
                       <TableCell>{row.pb ?? '-'}</TableCell>
                       <TableCell>{row.projected_growth ?? '-'}</TableCell>
                       <TableCell>{row.fcf_yield !== undefined && row.fcf_yield !== null ? (row.fcf_yield * 100).toFixed(2) + '%' : '-'}</TableCell>
+                      <TableCell>{row.dividend_yield !== undefined && row.dividend_yield !== null ? (row.dividend_yield * 100).toFixed(2) + '%' : '-'}</TableCell>
+                      <TableCell>{row.return_on_equity !== undefined && row.return_on_equity !== null ? (row.return_on_equity * 100).toFixed(2) + '%' : '-'}</TableCell>
                       <TableCell>{row.score.toFixed(3)}</TableCell>
                     </TableRow>
                   ))}
