@@ -103,6 +103,7 @@ function App() {
     ps: 1,
     pb: 1,
     projected_growth: 1,
+    fcf_yield: 1,
   });
   const [screenerLoading, setScreenerLoading] = useState(false);
   const [screenerError, setScreenerError] = useState('');
@@ -144,6 +145,7 @@ function App() {
         ps_weight: weights.ps.toString(),
         pb_weight: weights.pb.toString(),
         projected_growth_weight: weights.projected_growth.toString(),
+        fcf_yield_weight: weights.fcf_yield.toString(),
         limit: '20',
       });
       const res = await axios.get(`https://stock-screener-teh0.onrender.com/screener/value?${params.toString()}`);
@@ -236,6 +238,7 @@ function App() {
             >
               <MenuItem value="NASDAQ">NASDAQ</MenuItem>
               <MenuItem value="NYSE">NYSE</MenuItem>
+              <MenuItem value="OSE">OSE</MenuItem>
             </TextField>
             {Object.entries(weights).map(([key, value]) => (
               <Box key={key} sx={{ minWidth: 120 }}>
@@ -270,6 +273,7 @@ function App() {
                     <TableCell>P/S</TableCell>
                     <TableCell>P/B</TableCell>
                     <TableCell>Proj. Growth</TableCell>
+                    <TableCell>FCF Yield</TableCell>
                     <TableCell>Score</TableCell>
                   </TableRow>
                 </TableHead>
@@ -284,6 +288,7 @@ function App() {
                       <TableCell>{row.ps ?? '-'}</TableCell>
                       <TableCell>{row.pb ?? '-'}</TableCell>
                       <TableCell>{row.projected_growth ?? '-'}</TableCell>
+                      <TableCell>{row.fcf_yield !== undefined && row.fcf_yield !== null ? (row.fcf_yield * 100).toFixed(2) + '%' : '-'}</TableCell>
                       <TableCell>{row.score.toFixed(3)}</TableCell>
                     </TableRow>
                   ))}

@@ -47,19 +47,21 @@ def get_stock_history(ticker: str = Query(..., description="Stock ticker symbol"
 
 @app.get("/screener/value")
 def value_screener(
-    exchange: str = Query("NASDAQ", description="Stock exchange (e.g., NASDAQ, NYSE)"),
+    exchange: str = Query("NASDAQ", description="Stock exchange (e.g., NASDAQ, NYSE, OSE)"),
     peg_weight: float = Query(1.0),
     forward_pe_weight: float = Query(1.0),
     pe_ttm_weight: float = Query(1.0),
     ps_weight: float = Query(1.0),
     pb_weight: float = Query(1.0),
     projected_growth_weight: float = Query(1.0),
+    fcf_yield_weight: float = Query(1.0),
     limit: int = Query(20)
 ):
     # For demo: use a static list of tickers per exchange (replace with dynamic fetch for production)
     exchange_tickers = {
         "NASDAQ": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "PEP", "AVGO", "COST"],
-        "NYSE": ["JNJ", "V", "PG", "JPM", "MA", "UNH", "HD", "DIS", "BAC", "VZ"]
+        "NYSE": ["JNJ", "V", "PG", "JPM", "MA", "UNH", "HD", "DIS", "BAC", "VZ"],
+        "OSE": ["NHY.OL", "YAR.OL", "TEL.OL", "DNB.OL", "MOWI.OL", "ORK.OL", "TOM.OL", "SALM.OL", "SUBC.OL", "AKSO.OL"]
     }
     tickers = exchange_tickers.get(exchange.upper(), exchange_tickers["NASDAQ"])
 
@@ -67,14 +69,15 @@ def value_screener(
     for ticker in tickers:
         try:
             info = yf.Ticker(ticker).info
-            # Get metrics, use None if not available
             peg = info.get("pegRatio")
             forward_pe = info.get("forwardPE")
             pe_ttm = info.get("trailingPE")
             ps = info.get("priceToSalesTrailing12Months")
             pb = info.get("priceToBook")
             projected_growth = info.get("earningsQuarterlyGrowth")
-            # Invert metrics where lower is better (PE, PB, PS, PEG)
+            free_cash_flow = info.get("freeCashflow")
+            market_cap = info.get("marketCap")
+            fcf_yield = (free_cash_flow / market_cap) if free_cash_flow and market_cap and market_cap > 0 else None
             score = 0
             count = 0
             if peg and peg > 0:
@@ -95,6 +98,9 @@ def value_screener(
             if projected_growth and projected_growth > 0:
                 score += projected_growth_weight * projected_growth
                 count += projected_growth_weight
+            if fcf_yield and fcf_yield > 0:
+                score += fcf_yield_weight * fcf_yield
+                count += fcf_yield_weight
             if count > 0:
                 final_score = score / count
             else:
@@ -108,11 +114,11 @@ def value_screener(
                 "ps": ps,
                 "pb": pb,
                 "projected_growth": projected_growth,
+                "fcf_yield": fcf_yield,
                 "score": final_score
             })
         except Exception as e:
             continue
 
-    # Sort by score descending and return top N
     results = sorted(results, key=lambda x: x["score"], reverse=True)[:limit]
     return {"exchange": exchange, "results": results} 
