@@ -32,6 +32,7 @@ interface ValueResult {
   ps?: number;
   pb?: number;
   projected_growth?: number;
+  fcf_yield?: number;
   score: number;
 }
 
